@@ -12,6 +12,12 @@ function Square(props) {
   );
 }
 
+function RestartButton(props) {
+  return (
+    <button onClick={props.onClick}>Restart</button>
+  );
+}
+
 class Board extends React.Component {
   constructor(props){
     super(props);
@@ -22,6 +28,11 @@ class Board extends React.Component {
   }
 
   handleClick(i) {
+    var winner = this.checkWinner();
+    if(winner){
+      return;
+    }
+
     const sqrs = this.state.squares.slice();
     if(sqrs[i] !== null){
       return;
@@ -40,8 +51,42 @@ class Board extends React.Component {
       onClick={() => this.handleClick(i)} />;
   }
 
+  checkWinner() {
+    var sqrs = this.state.squares;
+    var lines = [
+      [0, 1, 2],
+      [3, 4, 5],
+      [6, 7, 8],
+      [0, 3, 6],
+      [1, 4, 7],
+      [2, 5, 8],
+      [0, 4, 8],
+      [2, 4, 6]
+    ];
+   
+    for(var i=0; i<lines.length; i++){
+      var [a, b, c] = lines[i];
+      if(sqrs[a] && sqrs[a] === sqrs[b] && sqrs[a] === sqrs[c]) {
+        return sqrs[a];
+      }
+    }
+  }
+
+  restart() {
+    var winner = this.checkWinner();
+    this.setState({
+      squares: Array(9).fill(null),
+      xIsNext: winner != null 
+        ? this.state.xIsNext
+        : !this.state.xIsNext
+    });
+  }
+
   render() {
-    var status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
+    var winner = this.checkWinner();
+    var status = winner 
+      ? 'Winner is ' + winner 
+      : 'Next player: ' + (this.state.xIsNext ? 'X' : 'O');
 
     return (
       <div>
@@ -60,6 +105,9 @@ class Board extends React.Component {
           {this.renderSquare(6)}
           {this.renderSquare(7)}
           {this.renderSquare(8)}
+        </div>
+        <div className="status">
+          <RestartButton onClick={() => this.restart()} />
         </div>
       </div>
     );
